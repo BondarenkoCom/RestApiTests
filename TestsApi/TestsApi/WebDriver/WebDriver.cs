@@ -9,11 +9,12 @@ using TestsApi.Values;
 
 namespace TestsApi.WebDriver
 {
-    public class ApiWebDriver : WebDriverInterface
+    public class ApiWebDriver : IWebDriver
     {
         public async Task<string> RunDriverClient(string url)
         {
-           var client = new HttpClient();
+
+            var client = new HttpClient();
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
@@ -21,7 +22,7 @@ namespace TestsApi.WebDriver
                 Headers =
                 {
                     //Change place for Tokens
-                    { "X-RapidAPI-Key", "-----something token" },
+                    { "X-RapidAPI-Key", "42bd840cd5mshad835b2dc82f2f6p1b7550jsn04da2400b632" },
                     { "X-RapidAPI-Host", "google-translate1.p.rapidapi.com" },
                 },
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>

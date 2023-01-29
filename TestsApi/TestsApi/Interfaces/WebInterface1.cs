@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TestsApi.Interfaces
 {
-    public interface WebDriverInterface
+    public interface IWebDriver
     {
         Task<string> RunDriverClient(string url);
 
