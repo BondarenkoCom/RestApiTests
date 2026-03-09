@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
+using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using TestsApi.Helpers;
 using TestsApi.Models;
 using TestsApi.Values;
@@ -17,7 +17,6 @@ namespace TestsApi.ApiTests
         [SetUp]
         public void Setup()
         {
-
         }
 
         [Test]
@@ -25,28 +24,25 @@ namespace TestsApi.ApiTests
         [Parallelizable]
         public void Positive_Test_GET_Planetary()
         {
-            var request = _apiWebDriver.RunDriverClient(driverValues.url, 
-                driverValues.urlNasaApiTypePlanetary, 
+            var request = _apiWebDriver.RunDriverClient(
+                driverValues.url,
+                driverValues.urlNasaApiTypePlanetary,
                 driverValues.urlPartApiKey);
+
             var sortData = JsonSerializer.Deserialize<ResponseModel>(request.Result);
-            
+            var expectedData = _jsonReader.GetData();
+
+            Assert.That(sortData, Is.Not.Null);
+            Assert.That(expectedData, Is.Not.Null);
+
             Assert.Multiple(() =>
             {
-                Assert.That(sortData.date, Is.Not.Null);
-                Assert.That(sortData.date, Is.Not.Empty);
-
-                Assert.That(sortData.explanation, Is.Not.Empty);
-                Assert.That(sortData.explanation, Is.Not.Null);
-
-                Assert.That(sortData.media_type, Is.Not.Empty);
-                Assert.That(sortData.media_type, Is.Not.Null);
-                Assert.That(sortData.media_type, Does.Match(_jsonReader.GetData().media_type));
-
-                Assert.That(sortData.title, Is.Not.Empty);
-                Assert.That(sortData.title, Is.Not.Null);
-
-                Assert.That(sortData.hdurl, Is.Not.Empty);
-                Assert.That(sortData.hdurl, Is.Not.Null);
+                Assert.That(sortData!.date, Is.Not.Null.And.Not.Empty);
+                Assert.That(sortData.explanation, Is.Not.Null.And.Not.Empty);
+                Assert.That(sortData.media_type, Is.Not.Null.And.Not.Empty);
+                Assert.That(sortData.media_type, Is.EqualTo(expectedData!.media_type));
+                Assert.That(sortData.title, Is.Not.Null.And.Not.Empty);
+                Assert.That(sortData.hdurl, Is.Not.Null.And.Not.Empty);
             });
         }
 
@@ -54,21 +50,25 @@ namespace TestsApi.ApiTests
         [Parallelizable]
         public void Positive_Test_GET_Mars_Weather()
         {
-            var request = _apiWebDriver.RunDriverClient(driverValues.url,
+            var request = _apiWebDriver.RunDriverClient(
+                driverValues.url,
                 driverValues.urlMarsWeatherWithApuKey);
-            var sortData = JsonSerializer.Deserialize<ResponseModel>(request.Result);
+
+            using var document = JsonDocument.Parse(request.Result);
+            var validityChecks = document.RootElement.GetProperty("validity_checks");
+            var solsChecked = validityChecks.GetProperty("sols_checked");
+            var solHoursRequired = validityChecks.GetProperty("sol_hours_required");
 
             Assert.Multiple(() =>
-            { 
-                Assert.That(sortData.validity_checks.sols_checked.ToString()[0], Is.Not.Empty);
-                Assert.That(sortData.validity_checks.sols_checked.ToString()[0], Is.Not.Null);
+            {
+                Assert.That(solsChecked.ValueKind, Is.EqualTo(JsonValueKind.Array));
+                Assert.That(solsChecked.EnumerateArray().Any(), Is.True);
 
-                Assert.That(sortData.validity_checks.sol_hours_required.ToString()[0], Is.Not.Empty);
-                Assert.That(sortData.validity_checks.sol_hours_required.ToString()[0], Is.Not.Null);
-                
-                Console.WriteLine(sortData.validity_checks.sols_checked);
+                Assert.That(solHoursRequired.ValueKind, Is.EqualTo(JsonValueKind.Number));
+                Assert.That(solHoursRequired.GetInt32(), Is.GreaterThan(0));
+
+                Console.WriteLine(solsChecked.ToString());
             });
-
         }
     }
 }

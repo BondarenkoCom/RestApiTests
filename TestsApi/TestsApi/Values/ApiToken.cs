@@ -1,7 +1,10 @@
-﻿namespace TestsApi.Values
+using System;
+
+namespace TestsApi.Values
 {
-    public class ApiToken
+    public static class ApiToken
     {
-        public static string NASAToken = "XWi3U2CKG4tuNDF7TzbSYYm8LCrKWD9E21zLo1in";
+        public static string NASAToken =>
+            Environment.GetEnvironmentVariable("NASA_API_KEY") ?? "DEMO_KEY";
     }
 }

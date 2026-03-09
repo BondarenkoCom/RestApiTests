@@ -1,4 +1,5 @@
-﻿using System.IO;
+using System;
+using System.IO;
 using Newtonsoft.Json;
 using TestsApi.Models;
 
@@ -8,12 +9,13 @@ namespace TestsApi.Helpers
     {
         public JsonModelValueForComresion? GetData()
         {
-            var getPath = @"C:\Users\Honor\source\repos\RestApiTest\TestsApi\TestsApi\JsonFiles\valuesForComparison.json";
+            var getPath = Path.Combine(
+                AppContext.BaseDirectory,
+                "JsonFiles",
+                "valuesForComparison.json");
 
             string json = File.ReadAllText(getPath);
-            JsonModelValueForComresion values = JsonConvert.DeserializeObject<JsonModelValueForComresion>(json);
-            return values;
+            return JsonConvert.DeserializeObject<JsonModelValueForComresion>(json);
         }
-
     }
 }
